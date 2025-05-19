@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>网页内容抓取工具</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <h1>网页内容抓取</h1>
+    
+    <div class="form-group">
+      <label for="scrollDelay">滚动间隔(毫秒):</label>
+      <input type="number" id="scrollDelay" value="2000" min="500">
+    </div>
+    
+    <div class="form-group">
+      <label for="maxPages">最大翻页数:</label>
+      <input type="number" id="maxPages" value="10" min="1">
+    </div>
+    
+    <div class="form-group">
+      <label for="contentSelector">内容选择器(可选):</label>
+      <input type="text" id="contentSelector" placeholder="例如: .article, #content">
+    </div>
+    
+    <button id="startBtn">开始抓取</button>
+    <div id="status"></div>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
