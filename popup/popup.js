@@ -1,44 +1,43 @@
 document.getElementById('startBtn').addEventListener('click', () => {
-  const scrollDelay = parseInt(document.getElementById('scrollDelay').value);
-  const maxPages = parseInt(document.getElementById('maxPages').value);
-  const contentSelector = document.getElementById('contentSelector').value.trim();
-  
-  const statusEl = document.getElementById('status');
-  statusEl.textContent = "正在抓取内容...";
-  
-  chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-    chrome.tabs.sendMessage(tabs[0].id, {
-      action: "startScraping",
-      options: {
-        scrollDelay,
-        maxPages,
-        contentSelector: contentSelector || null
-      }
-    }, (response) => {
-      if (!response) {
-        statusEl.textContent = "错误: 没有收到响应";
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    if (tabs.length === 0) {
+      console.error("没有找到活动标签页");
+      return;
+    }
+
+    chrome.tabs.sendMessage(tabs[0].id, { action: "startScraping" }, (response) => {
+      if (chrome.runtime.lastError) {
+        console.error("发送消息时出错:", chrome.runtime.lastError);
         return;
       }
-      
+
+      if (!response) {
+        console.error("没有收到响应");
+        return;
+      }
+
       if (response.status === "success") {
-        statusEl.textContent = "内容抓取完成，正在下载...";
-        
-        // 使用 chrome.downloads API 请求用户指定文件的保存位置
-        chrome.downloads.download({
-          url: 'data:text/plain;charset=utf-8,' + encodeURIComponent(response.content),
-          filename: `scraped_content_${new Date().toISOString().slice(0,10)}.txt`,
-          saveAs: true // 请求用户指定保存路径
-        }, (downloadId) => {
-          if (chrome.runtime.lastError) {
-            statusEl.textContent = "错误: " + chrome.runtime.lastError.message;
-          } else {
-            setTimeout(() => {
-              statusEl.textContent = "完成!";
-            }, 2000);
-          }
+        alert("已成功获取,点击下载按钮");
+        document.getElementById('download').addEventListener('click', () => {
+          // 创建一个Blob对象
+          const blob = new Blob([response.content], { type: 'text/plain' });
+
+          // 创建一个下载链接
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'scraped_content.txt'; // 设置下载文件的名称
+          document.body.appendChild(a);
+          a.click();
+
+          // 清理
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
         });
+      } else if (response.status === "error") {
+        console.error("错误:", response.error);
       } else {
-        statusEl.textContent = "错误: " + (response.error || "未知错误");
+        console.error("未知的响应状态:", response);
       }
     });
   });
