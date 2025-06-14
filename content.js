@@ -18,7 +18,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     // 发送抓取的内容到后台脚本
     sendResponse({
-      status: "success",
+      status: "scrapSuccess",
       content: contentToDownload.join('\n')
     });
   }
