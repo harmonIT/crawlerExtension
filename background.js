@@ -1,23 +1,32 @@
-chrome.runtime.onMessage.addListener((request,sender,sendResponse)=>{
-  if (request.action === "download"){
-  
-      // 创建一个Blob对象
-      const blob = new Blob([content], { type: 'text/plain' });
-
-      // 创建一个下载链接
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-
-      a.href = url;
-      a.download = 'scraped_content.txt'; // 设置下载文件的名称
-      document.body.appendChild(a);
-      a.click();
-
-      // 清理
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+//处理下载逻辑
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "toBackgroundDownload") {
+    const blob = new Blob([request.content], { type: 'text/plain' });
+    // 使用 FileReader 将 Blob 转换为 Data URL
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      const dataUrl = event.target.result;
+      
+      // 使用 chrome.downloads.download 下载文件
+      chrome.downloads.download({
+        url: dataUrl,
+        filename: 'scraped_content.txt',
+        saveAs: false
+      }, (downloadId) => {
+        if (chrome.runtime.lastError) {
+          sendResponse({
+            status: "downloadFailed",
+            error: chrome.runtime.lastError.message
+          });
+        } else {
+          sendResponse({
+            status: "downloadSuccess",
+            downloadId: downloadId
+          });
+        }
+      });
+    };
+    reader.readAsDataURL(blob);
   }
-  sendResponse({
-    status: "downloadSuccess",
-  })
-})
+});
+

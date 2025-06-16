@@ -1,9 +1,9 @@
-// ！！收集当前页面的内容
+// 收集当前页面的内容并传递下载内容到background.js
+let contentToDownload = [];
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "startScraping") {
     // 获取所有类名为 'short' 的元素
     let elements = document.getElementsByClassName('short');
-    let contentToDownload = [];
 
     // 遍历每个元素
     for (var i = 0; i < elements.length; i++) {
@@ -21,5 +21,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       status: "scrapSuccess",
       content: contentToDownload.join('\n')
     });
+    chrome.runtime.sendMessage({action: "toPopupDownload", content: contentToDownload})
   }
 });
+
