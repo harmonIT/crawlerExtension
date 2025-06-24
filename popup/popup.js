@@ -22,6 +22,7 @@ document.getElementById('startBtn').addEventListener('click', () => {
     });
   });
 });
+
 chrome.runtime.onMessage.addListener((request,sender,response)=>{
   document.getElementById('download').addEventListener('click',()=>{
     if (request.action === "toPopupDownload"){
@@ -35,4 +36,8 @@ chrome.runtime.onMessage.addListener((request,sender,response)=>{
       return;
     }
   });
+  document.getElementById('turn').addEventListener('click',()=>{
+    chrome.runtime.sendMessage({action:"toContentTurn"})
+    console.log("开始翻页")
+  })
 })
